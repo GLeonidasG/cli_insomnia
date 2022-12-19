@@ -4,14 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npm run tsx"
+    "dev": "tsx index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "inquirer": "^9.1.4",
-    "inquirer-search-list": "^1.2.6"
+    "inquirer-file-tree-selection-prompt": "^2.0.5"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.3",
