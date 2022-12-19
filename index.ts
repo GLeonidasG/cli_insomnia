@@ -1,27 +1,32 @@
-// import inquirer from 'inquirer'
-// import inquirerFileTreeSelection from 'inquirer-file-tree-selection-prompt'
+import inquirer from 'inquirer';
+import ifts from "inquirer-file-tree-selection-prompt";
 
-// inquirer.registerPrompt('file-tree-selection', inquirerFileTreeSelection)
+inquirer.registerPrompt('file-tree-selection', ifts)
 
-// inquirer
-//   .prompt([
-//     {
-//       type: 'file-tree-selection',
-//       name: 'file'
-//     }
-//   ])
-//   .then(answers => {
-//     console.log(JSON.stringify(answers))
-//   });
-import { RequestBuilder } from "./src/RequestBuilder";
+const answers = await inquirer
+  .prompt([
+    {
+      type: 'file-tree-selection',
+      name: 'file',
+      root: './schema'
+    }
+  ])
+  // .then(async (answers) => {
+  //   try {
+  //     const { file } = answers;
+  //     console.log(file);
+  //     const requester = await import(file);
+  //     requester();
+  //   } catch(error) {
+  //     console.error(error);
+  //   }
+    //
+  // });
 
-const headers = {
-  "dwc-stage-configuration": "feature 1",
-  "header": "value"
-}
+const { file } = answers;
 
-new RequestBuilder("URL")
-  .headers(headers)
-  .query({ "$expand": "crops($expand=crop)", "$search": "asc" })
-  .body({ message: "OKAY", status: 200 })
-  .request();
+const requester = await import(file);
+
+requester.default();
+
+
