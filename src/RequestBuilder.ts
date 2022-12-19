@@ -1,3 +1,4 @@
+import { execSync } from "child_process";
 
 type Headers = Record<string, string>
 type Body = Record<string, unknown>
@@ -9,7 +10,7 @@ export class RequestBuilder {
     const headerKeys = Object.keys(this._headers);
     let header = "";
     for (const key of headerKeys) {
-      header += ` -H ${key}: ${this._headers[key]}`;
+      header += ` -H "${key}: ${this._headers[key]}"`;
     }
     return header;
   }
@@ -23,14 +24,21 @@ export class RequestBuilder {
     return query.join("&");
   }
 
+  private _auth: string
   private _headers: Headers
   private _body: Body
   private _query: Query
 
   constructor(private URL: string) {
+    this._auth = ""
     this._headers = {}
     this._query = {}
     this._body = {}
+  }
+
+  public auth(login: {user: string, password: string}): RequestBuilder {
+    this._auth = `-u ${login.user}:${login.password}`;
+    return this;
   }
 
   public headers(headersBody: Headers): RequestBuilder {
@@ -51,8 +59,15 @@ export class RequestBuilder {
   public request(): void {
     const header = this.mountHeader();
     const query = this.mountQuery();
-    const body = JSON.stringify(this._body || {});
-    console.table([{ header, query, body, url: this.URL }]);
+    const auth  = this._auth;
+    const body = JSON.stringify(this._body || {}, null, 2);
+    const requestCommand = `curl ${auth} ${header} ${this.URL}`;
+  
+    console.log("Requested url: ", requestCommand);
+    const results = execSync(requestCommand);
+  
+    console.log("Data response:");
+    console.log(JSON.parse(Buffer.from(results).toString()));
   }
 }
 
