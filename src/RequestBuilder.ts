@@ -7,7 +7,7 @@ type Query = Record<string, string | number>
 
 export class RequestBuilder {
 
-    private requestConfig: AxiosRequestConfig;
+    protected requestConfig: AxiosRequestConfig;
 
     constructor(url: string) {
         this.requestConfig = { url };
