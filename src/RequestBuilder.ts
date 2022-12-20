@@ -33,8 +33,30 @@ export class RequestBuilder {
         return this;
     }
 
+    public GET(): RequestBuilder {
+        this.requestConfig.method = "GET";
+        return this;
+    }
 
+    public POST(): RequestBuilder {
+        this.requestConfig.method = "POST";
+        return this;
+    }
+    
+    public PUT(): RequestBuilder {
+        this.requestConfig.method = "PUT";
+        return this;
+    }
+    
+    public PATCH(): RequestBuilder {
+        this.requestConfig.method = "PATCH";
+        return this;
+    }
 
+    public DELETE(): RequestBuilder {
+        this.requestConfig.method = "DELETE";
+        return this;
+    }
 
     public async request(): Promise<void> {
         try {
