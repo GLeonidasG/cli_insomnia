@@ -25,8 +25,10 @@ const Modules: ModulesType = {
             }
         ])
         const { file } = answers;
-        const requester = await import(file);
-        requester.default();
+        if((file as string).endsWith(".ts")) {
+            const requester = await import(file);
+            requester.default();
+        }
     },
     EXIT: () => {}
 };
@@ -40,15 +42,22 @@ const Modules: ModulesType = {
         choices: [Choices.CALL_API, Choices.EXIT]
     }]));
 
-    switch (mainResponse) {
-        case Choices.CALL_API:
-            await Modules.CALL_API()
+    try {
+        switch (mainResponse) {
+            case Choices.CALL_API:
+                await Modules.CALL_API()
             Main();
             break;
 
-        case Choices.EXIT:
-            break;
-        default:
-            break;
+            case Choices.EXIT:
+                break;
+            default:
+                break;
+        }
+    } catch (error) {
+        console.log("==================");
+        console.error(error);
+        console.log("==================");
+        Main();
     }
 })()
