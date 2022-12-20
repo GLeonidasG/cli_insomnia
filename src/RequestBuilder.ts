@@ -1,4 +1,5 @@
-import { execSync } from "child_process";
+import axios, { AxiosRequestConfig } from "axios";
+
 
 type Headers = Record<string, string>
 type Body = Record<string, unknown>
@@ -6,68 +7,47 @@ type Query = Record<string, string | number>
 
 export class RequestBuilder {
 
-  private mountHeader(): string {
-    const headerKeys = Object.keys(this._headers);
-    let header = "";
-    for (const key of headerKeys) {
-      header += ` -H "${key}: ${this._headers[key]}"`;
+    private requestConfig: AxiosRequestConfig;
+
+    constructor(url: string) {
+        this.requestConfig = { url };
     }
-    return header;
-  }
 
-  private mountQuery(): string {
-    const queryKeys = Object.keys(this._query);
-    let query = [];
-    for (const key of queryKeys) {
-      query.push(`${key}=${this._query[key]}`)
+    public auth(login: {user: string, password: string}): RequestBuilder {
+        this.requestConfig.auth = { username: login.user, password: login.password };
+        return this;
     }
-    return query.join("&");
-  }
 
-  private _auth: string
-  private _headers: Headers
-  private _body: Body
-  private _query: Query
+    public headers(headersBody: Headers): RequestBuilder {
+        this.requestConfig.headers = Object.assign({}, headersBody);
+        return this;
+    }
 
-  constructor(private URL: string) {
-    this._auth = ""
-    this._headers = {}
-    this._query = {}
-    this._body = {}
-  }
+    public body(requestBody: Body): RequestBuilder {
+        this.requestConfig.data = Object.assign({}, requestBody);
+        return this;
+    }
 
-  public auth(login: {user: string, password: string}): RequestBuilder {
-    this._auth = `-u ${login.user}:${login.password}`;
-    return this;
-  }
+    public query(requestQueries: Query): RequestBuilder {
+        this.requestConfig.params = Object.assign({}, requestQueries);
+        return this;
+    }
 
-  public headers(headersBody: Headers): RequestBuilder {
-    this._headers = Object.assign({}, headersBody);
-    return this;
-  }
 
-  public body(requestBody: Body): RequestBuilder {
-    this._body = Object.assign({}, requestBody);
-    return this;
-  }
 
-  public query(requestQueries: Query): RequestBuilder {
-    this._query = Object.assign({}, requestQueries);
-    return this;
-  }
 
-  public request(): void {
-    const header = this.mountHeader();
-    const query = this.mountQuery();
-    const auth  = this._auth;
-    const body = JSON.stringify(this._body || {}, null, 2);
-    const requestCommand = `curl ${auth} ${header} ${this.URL}`;
-  
-    console.log("Requested url: ", requestCommand);
-    const results = execSync(requestCommand);
-  
-    console.log("Data response:");
-    console.log(JSON.parse(Buffer.from(results).toString()));
-  }
+    public async request(): Promise<void> {
+        try {
+            const { data, status } = await axios.request(this.requestConfig);
+            console.table({ status });
+            console.log("Response Data: \n", data);
+            console.log("=======================");
+        } catch (error) {
+            console.log("================ Request error ================");
+            const { data: response, status } = (error as any).response;
+            console.table({response, status});
+            console.log("===============================================");
+        }
+    }
 }
 
