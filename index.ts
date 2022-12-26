@@ -8,7 +8,21 @@ const Choices = {
     EXIT: "Exit"
 } as const;
 
+type ChoiceMapType = {
+    name: typeof Choices[keyof typeof Choices],
+    value: keyof typeof Choices
+}
+
 type ChoiceOptions = keyof typeof Choices;
+
+const choiceMap = (): ChoiceMapType[] => {
+    const mappedChoices: ChoiceMapType[] = []
+    for(let choice in Choices) {
+        mappedChoices.push({ name: Choices[choice as ChoiceOptions], value: choice as ChoiceOptions })
+        
+    }
+    return mappedChoices;
+}
 
 type ModulesType = { 
     [K in ChoiceOptions]: Function;
@@ -21,7 +35,8 @@ const Modules: ModulesType = {
             {
                 type: 'file-tree-selection',
                 name: 'file',
-                root: './schema'
+                root: './schema',
+                hideRoot: true
             }
         ])
         const { file } = answers;
@@ -30,34 +45,35 @@ const Modules: ModulesType = {
             requester.default();
         }
     },
-    EXIT: () => {}
+    EXIT: async () => {
+        process.exit();
+    }
 };
 
-
-(async function Main() {
-    const { Menu: mainResponse } = (await inquirer.prompt([{
+async function promptMenu () {
+    const { menu } = (await inquirer.prompt([{
         type: "list",
-        name: "Menu",
+        name: "menu",
         message: "What do you want to do?",
-        choices: [Choices.CALL_API, Choices.EXIT]
+        choices: choiceMap
     }]));
+    return menu;
+}
 
+async function processMenuChoice (mainResponse: ChoiceOptions) {
     try {
-        switch (mainResponse) {
-            case Choices.CALL_API:
-                await Modules.CALL_API()
-            Main();
-            break;
-
-            case Choices.EXIT:
-                break;
-            default:
-                break;
-        }
+        await Modules[mainResponse as ChoiceOptions]();
     } catch (error) {
         console.log("==================");
         console.error(error);
         console.log("==================");
-        Main();
     }
-})()
+}
+
+
+(async function Main() {
+    const mainResponse = await promptMenu();
+    await processMenuChoice(mainResponse);
+    Main();
+})();
+
