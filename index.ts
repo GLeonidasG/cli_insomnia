@@ -64,9 +64,9 @@ async function processMenuChoice (mainResponse: ChoiceOptions) {
     try {
         await Modules[mainResponse as ChoiceOptions]();
     } catch (error) {
-        console.log("==================");
+        console.log("========= Error =========");
         console.error(error);
-        console.log("==================");
+        console.log("=========================");
     }
 }
 
